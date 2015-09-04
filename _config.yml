@@ -9,7 +9,6 @@ highlighter: pygments
 
 paginate: 20
 baseurl: /lcy_blog/
-domain_name: 'http://lokyoung.github.io/lcy_blog/'
 google_analytics: 'UA-XXXXXXXX-X'
 disqus: false
 disqus_shortname: 'your-disqus-shortname'
