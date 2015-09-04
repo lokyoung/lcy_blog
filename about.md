@@ -11,7 +11,7 @@ profile: true
 
 Email: lokyoung@outlook.com
 
-Github: [@https://github.com/lokyoung](https://github.com/lokyoung)
+Github: [https://github.com/lokyoung](https://github.com/lokyoung)
 
 Ruby China: [https://ruby-china.org/lokyoung](https://ruby-china.org/lokyoung)
 

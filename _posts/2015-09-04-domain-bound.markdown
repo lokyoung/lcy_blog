@@ -1,7 +1,6 @@
 ---
 title: "部署在github pages和绑定域名的一些问题"
 date: 2015-09-04 21:29:20
-description: 博客部署在github pages时url的配置和如何去绑定一个顶级域名
 ---
 ###部署在github pages
 我的博客在本地调试时js和css路径都正常，但是上传到github pages时发现js和css不对。作为一个新手，我首先怀疑的
