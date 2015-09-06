@@ -1,5 +1,5 @@
 ---
-title: "关于github上commit后不记录到自己github上的问题"
+title: "关于github上commit后不记录到自己github账号上的问题"
 date: 2015-09-06 0:39:42
 ---
 
