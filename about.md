@@ -7,7 +7,7 @@ profile: true
 
 <img src="{{ site.baseurl }}assets/images/avatar.png" width="150px">
 
-刘晨阳，安徽马鞍山人。编程爱好者，喜爱Ruby，现就读于华东交通大学软件工程专业。
+刘晨阳，网名lokyoung，安徽马鞍山人。编程爱好者，喜爱Ruby，现就读于华东交通大学软件工程专业。
 
 Email: lokyoung@outlook.com
 
