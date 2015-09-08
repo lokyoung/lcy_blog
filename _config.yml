@@ -1,6 +1,6 @@
 name: 刘晨阳
-description: A rooky web developer.
-meta_description: "Your New Jekyll Site, Blogging about stuffs"
+description: A rookie web developer.
+meta_description: "This is my blog, Something about technology."
 
 aboutPage: true
 
@@ -9,7 +9,7 @@ highlighter: pygments
 
 paginate: 20
 baseurl: /
-google_analytics: 'UA-XXXXXXXX-X'
+#google_analytics: 'UA-XXXXXXXX-X'
 disqus: true
 disqus_shortname: 'lokyoungblog'
 
