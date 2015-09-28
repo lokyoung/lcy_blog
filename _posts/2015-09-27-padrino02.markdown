@@ -1,0 +1,114 @@
+---
+title: "sinatra的基本用法和特性"
+date: 2015-09-27 19:00:00
+---
+本文是我最近阅读《Sinatra: Up and Running》的一些重要知识的汇总和心得。
+如果和我一样在学习Rails时遇到困难觉得不顺的朋友，可以尝试从sinatra学起。
+由于sinatra的中文文档很少，我在这里也希望我能通过自己的一些微薄之力可以帮助到自己和喜欢ruby的人去更好地理解学习Sinatra。
+对sinatra和padrino感兴趣的朋友也可以自己去查阅这本英文书籍。
+
+####sinatra中的configure方法
+在sinatra中，提供了一个名为configure的方法来对各项配置进行操作，你只需要向configure方法传入一个方法块即可
+<pre><code>configure do
+ #block content
+end
+</code></pre>
+
+####向视图中传递数据
+后台的数据可以通过实例变量向对应的视图中进行传递(这点和Rails一样)
+<pre><code>get '/view' do
+  @name = 'sinatra'
+  erb :test
+end
+</code></pre>
+在视图中，以erb为例，可以通过<%= @name %>调用后台的值
+
+####sinatra中的简单文件结构
+静态文件存储在public文件夹下，public文件夹需要手动创建。
+<pre><code>get '/hello.html' do
+  'This will show you the public/hello.html'
+end
+</code></pre>
+视图文件存储在views文件夹下，views文件夹需要手动创建。
+这段代码会在访问/test的路劲时加载views/test下的视图（使用的是erb模板，当然也可以使用别的模板引擎）
+<pre><code>get '/test' do
+  erb :test
+end
+</code></pre>
+
+####sinatra中的过滤器
+sinatra中过滤器(filter)的配置，通过before和after两个方法起到过滤器的作用。其中before在执行前调用，after在执行后调用。
+<pre><code>before do
+  @value = 'before'
+end <br/>
+get '/' do
+  "The value is #{@value}."
+end <br/>
+after do
+  'All over.'
+end
+</code></pre>
+你也可以给before和after传递相应参数，参数为url，例如before '/index' {...}便会在你请求index前执行
+
+####异常处理
+众所周知，在http协议中，400-499是访问错误，500-599是服务器错误，而比较常见的错误代码可能大家最熟悉的就是“臭名昭著”的404了
+不用担心，作为一个使用sintra开发者，可以通过向not_found方法传递一个代码块，很简单地对404进行异常处理。
+<pre><code>not\_found do
+  'This is a 404 page. You can write anything you want here.'
+end
+</code></pre>
+
+对500错误处理，通过error方法
+<pre><code>
+get '/div_by_zero' do
+  0 / 0
+end _
+error do
+  'You have done something wrong.'
+end
+</code></pre>
+
+####sinatra中的session
+通过调用configure的代码块来设置session，只要通过将sessions作为参数传入enable代码块，
+你便可以通过session存储和传输数据
+<pre><code>configure do
+  enable :sessions
+end _
+get '/set_session' do
+  session[:foo] = 'This is a session'
+end _
+get 'get_session' do
+  "The session is #{session[:foo]}"
+end
+</code></pre>
+
+sinatra也会在应用启动时通过一个秘钥对session进行加密，当然你也可以自己设置这个秘钥的值
+<pre><code>configure do
+  set :session_secret, 'your_custom_vlaue'
+end
+</code></pre>
+
+如果你想关闭session，例如在一个系统中对用户进行安全退出操作，可以通过session.clear进行操作
+<pre><code>get '/logout' do
+  session.clear
+  #回到主界面
+  redirect '/index'
+end
+</code></pre>
+
+####sinatra中的cookie
+通常来说一个session的周期是在你关闭浏览器时结束，而cookie则会在你本地保存一定的时间。
+sinatra和很多web开发工具一样，也可以设置cookie。sinatra中设置cookie最简单的方法就是response.set_cookie，
+移除cookie的方法也很简单response.delete_cookie。
+<pre><code>get '/' do
+  # response.set_cookie 方法的第一个参数是cookie的名称，第二个是cookie的值
+  response.set_cookie "foo", "value"
+  "Cookie set. Would you like to <a href='/read'>read it</a>?"
+end _
+get '/read' do
+  "Cookie has a value of: #{request.cookies['foo']}."
+end _
+get '/delete' do
+  response.delete_cookie "foo" "Cookie has been deleted."
+end
+</pre><code>
