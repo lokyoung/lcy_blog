@@ -62,7 +62,7 @@ end
 <pre><code>
 get '/div_by_zero' do
   0 / 0
-end _
+end <br/>
 error do
   'You have done something wrong.'
 end
@@ -73,10 +73,10 @@ end
 你便可以通过session存储和传输数据
 <pre><code>configure do
   enable :sessions
-end _
+end <br/>
 get '/set_session' do
   session[:foo] = 'This is a session'
-end _
+end <br/>
 get 'get_session' do
   "The session is #{session[:foo]}"
 end
@@ -104,10 +104,10 @@ sinatra和很多web开发工具一样，也可以设置cookie。sinatra中设置
   # response.set_cookie 方法的第一个参数是cookie的名称，第二个是cookie的值
   response.set_cookie "foo", "value"
   "Cookie set. Would you like to <a href='/read'>read it</a>?"
-end _
+end <br/>
 get '/read' do
   "Cookie has a value of: #{request.cookies['foo']}."
-end _
+end <br/>
 get '/delete' do
   response.delete_cookie "foo" "Cookie has been deleted."
 end
