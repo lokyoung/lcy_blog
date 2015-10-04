@@ -4,7 +4,7 @@ date: 2015-09-27 19:00:00
 ---
 本文是我最近阅读《Sinatra: Up and Running》的一些重要知识的汇总和心得。
 如果和我一样在学习Rails时遇到困难觉得不顺的朋友，可以尝试从sinatra学起。
-由于sinatra的中文文档很少，我在这里也希望我能通过自己的一些微薄之力可以帮助到自己和喜欢ruby的人去更好地理解学习Sinatra。
+由于sinatra的中文文档很少，我在这里也希望我能通过自己的一些微薄之力可以帮助到自己和喜欢Ruby的人去更好地理解学习Sinatra。
 对sinatra和padrino感兴趣的朋友也可以自己去查阅这本英文书籍。
 
 ####sinatra中的configure方法
@@ -24,7 +24,7 @@ end
 在视图中，以erb为例，可以通过<%= @name %>调用后台的值
 
 ####sinatra中的简单文件结构
-静态文件存储在public文件夹下，public文件夹需要手动创建。
+静态文件存储在public文件夹下，public文件夹需要手动创建。下代码会加载public文件夹下的hello.html文件
 <pre><code>get '/hello.html' do
   'This will show you the public/hello.html'
 end

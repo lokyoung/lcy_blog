@@ -1,0 +1,166 @@
+---
+title: 深入Sinatra
+date: 2015-10-04 15:45:00
+---
+之前的学习过程中，自己很多时候停留在应用层的方面，没有去深入研究。这次跟着这本书籍，向Sinatra的深处去看看
+###作用域
+众所周知，作用域在Ruby中是一个非常有趣的东西。而在sinatra中，作用域又能有怎样的魔法呢？
+<pre><code>require 'sinatra'  
+outer_self = self  
+get '/' do
+  content_type :txt
+  "outer self: #{outer_self}, inner self: #{self}"
+end
+</code></pre>
+这段代码的返回结果是 outer self: main, inner self: #<Sinatra::Application:0x007f80822812e8>
+这告诉我们，所有跟在路由后的代码块都会发送给Sinatra::Application类的一个实例。  
+如果你反复刷新页面，你会发现每一次的object.id都是不一样的，这就暗示着，sinatra会为每一次请求分配一个独立的Sinatra::Application对象。
+###深入Sinatra
+现在我们知道代码块的作用域了，你是不是想钻研得更透彻些？想不想知道get post这样的路由方法是如何存在的？OK，just follow me。  
+打开Ruby交互式环境irb（如果你用的是pry也可以）。
+<pre><code>irb(main):001:0> require 'sinatra'
+true
+irb(main):002:0> Sinatra::Application.superclass
+Sinatra::Base < Object
+irb(main):003:0> method(:get)
+Object (Sinatra::Delegator)#get(\*args, &block)
+irb(main):005:0> Sinatra::Delegator.methods(false)
+[
+    [0] delegate(\*methods) Sinatra::Delegator
+    [1]   target()         Sinatra::Delegator
+    [2]  target=(arg1)     Sinatra::Delegator
+]
+irb(main):006:0> Sinatra::Delegator.target
+Sinatra::Application < Sinatra::Base
+irb(main):007:0> Sinatra::Application.method(:get)
+Sinatra::Application (Sinatra::Base)#get(path, \*opts, &block)
+</code></pre>
+我们可以发现get方法在Sinatra中被定义了两次，一次是在Sinatra::Delegator中，Sinatra::Delegator是对Object类的一个扩展。
+所以get方法可以在整个Sinatra应用里的所有地方使用。  
+Delegator模块会向Sinatra::Application发送相同的方法调用，所以在Sinatra::Application中也可以使用相同的方法。
+Delegator模块代码
+<pre><code>module Delegator
+  def self.delegate(\*method)
+    methods.each do |method_name|
+      define_method(method_name) do |\*args, &block|
+        return super(\*args, &block) if respond_to? method_name
+        Delegator.target.send(method_name, \*args, &block)
+      end
+      private method_name
+    end
+  end  
+  delegate :get, :patch, :put, :post, :delete, :head, :options, :link, :unlink,
+           :template, :layout, :before, :after, :error, :not_found, :configure,
+           :set, :mime_type, :enable, :disable, :use, :development?, :test?,
+           :production?, :helpers, :settings, :register
+
+  class << self
+    attr_accessor :target
+  end  
+  self.target = Application
+end
+</code></pre>
+从这里可以看出实际上Delegator定义相应方法时，是通过动态定义方法进行的，并且向Application使用了动态调用方法send()，以此起到相同的效果。
+实际上真正的方法是定义在Base类中，但是Delegator通过自身对Object的拓展，能直接在主程序中使用。Delegator的作用也就在此体现。  
+所以，只需要引入sinatra/base即可去完成一个sinatra应用，只是从语法上相对繁琐。如果调用get方法，需要通过Sinatra::Application.get的形式。
+
+###扩充你的Sinatra
+####Extension
+想要打造属于你自己的Sinatra？很简单，你只需要打开Sinatra模块，将你的所需要添加的方法或者别的任何东西放到你自己定义的新模块中。
+最后通过register方法，将你的模块名作为参数传入即可。
+<pre><code>require 'sinatra/base'
+module Sinatra
+  module MyModule
+    def method_name(params)
+      # content
+    end
+  end  
+  register MyModule
+end
+</code></pre>
+如果你希望你在你的Sinatra项目中能使用这个模块，你只需在项目根目录下创建一个名为sinatra的文件夹。
+以刚刚的代码为例，创建一个名为method_name.rb的文件。
+在你的Sinatra应用中，只需要加入一行 require './sinatra/method_name'即可使用
+####Helpers
+Helpers和Extension在某种方面上来说非常相似，他们都是对Sinatra::Base的扩充，但是却扮演着不同的角色。  
+添加一个Extension，你需要register方法。添加一个Helper，你则需要将参数传入helpers方法。
+最重要的是，helpers不仅可以在你传入路由的代码块中使用，同时也可以在视图中使用。
+<pre><code>require 'sinatra'
+module Sinatra
+  module LinkHelper
+    def link(name)
+      case name
+      when :about then 'about'
+      when :index then 'index'
+      else "/page/#{name}"
+    end
+  end  
+  helpers LinkHelper
+end
+</code></pre>
+你只需要在sinatra文件夹下创建一个名为link_helper.rb的文件，通过require './sinatra/link_helper'即可对其进行使用。
+
+如果你只需要在一个应用中使用针对一个指定目标的helpers，你可以通过代码块来构建helpers，避免通过module构建的繁琐。
+<pre><code>require 'sinatra'
+helpers do
+  def link(name)
+    case name
+    when :about then '/about'
+    when :index then '/index'
+    else "/page/#{name}"
+  end
+end  
+get '/' do
+  erb :index
+end  
+get '/index.html' do
+  redirect link(:index)
+end
+</code></pre>
+###Ruby Web应用背后的Rack
+####初探Rack
+看到Rack时非常激动，不仅仅是Sinatra用到了Rack，包括Rails在内的大部分Ruby Web框架都是基于Rack的。  
+Rack是一个非常简洁的协议，它指定了一个HTTP服务器是通过什么方法与一个应用对象（就像Sinatra::Application这样）连接的规则。  
+Rack的核心内容，是指定了应用对象所谓endpoint，需要对方法调用进行响应。
+在服务器端，会调用一个有一个参数的方法。这个参数是一个hash，包含了请求Request的所有信息。包括HTTP动作，请求的路径，客户端的Header等。  
+这个方法预计会返回一个含有三个元素的数组。首先是状态码，包括成功的200状态码和臭名昭著的404等。  
+第二个元素是一个包含了所有的response Header信息的hash。  
+最后一个元素是body对象。这个对象需要表现得像一个字符串数组一样，需要对每一个请求进行响应，并且用字符串调用传递的代码块。  
+####Rack实现Sinatra
+Ruby的Web应用到了底层实际上都是通过Rack来实现的，所以我们也能通过Rack实现和Sinatra一样的功能。
+<pre><code>module MySinatra
+  class Application
+    def self.call(env)
+      new.call(env)
+    end  
+    def call(env)
+      headers = {'Content-Type' => 'text/html'}
+      if env['PATH_INFO'] == '/'
+        status, body = 200, 'hi'
+      else
+        status, body = 404, "Sinatra doesn't know this ditty!"
+      end
+      headers['Content-Length'] = body.length.to_s
+      [status, headers, [body]]
+    end
+  end
+end  
+require 'thin'
+Thin::Server.start MySinatra::Application, 4567
+</code></pre>
+以上是《Sinatra: Up And Running》中的源码。这里我以我自己的见解做一个简单的解读。  
+env这个参数中包含了一个request应当有的所有信息，是一个hash。每次请求都会通过Application的类方法call产生一个新的Application实例，
+并且调用实例方法call，env参数也会传入实例方法。实例方法call返回的是一个含有三个元素的hash，实际上就是一个response对象。
+在当前程序中，如果request的请求路径为'/'，则会返回200的HTTP成功状态码，并且会返回'hi'字符串到客户端。
+如果请求的是别的路径，则会产生404错误。
+最后使用了thin服务器并且指定了服务端口。  
+实际效果与下列Sinatra代码一样
+<pre><code>require 'sinatra'  
+get '/' do
+  'hi'
+end  
+not_found do
+  "Sinatra doesn't know this ditty!"
+end
+</code></pre>
+在Sintra中，提供了request对象和response对象，你可以很方便地去使用，可以起到和Rack一样甚至更加丰富的效果。
