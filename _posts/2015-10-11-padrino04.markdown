@@ -1,0 +1,139 @@
+---
+title: 优雅的padrino————简介和controller介绍
+date: 2015-10-11 17:20:00
+---
+在对sinatra有了一定认识后，开始对padrino进行学习。这里先提前说明，由于padrino是基于sinatra的。所以padrino可以使用sinatra的所有功能和特性。
+说到padrino，很多时候会与elegant(优雅)这个词联系在一起。那就让我们一起去认识padrino这位优雅的大叔吧(padrino的logo是一位正在吸烟的男子，LOL)。
+
+padrino的安装非常容易，只需要一步。在你的命令行中输入以下代码  
+<pre><code>$ gem install padrino
+</code></pre>
+
+新建一个padrino项目，这里我引用了官方的Blog tutorial教程  
+<pre><code>$ padrino g project sample_blog -t shoulda -e haml -c sass -s jquery -d activerecord -b
+</code></pre>
+这里先不介绍各项参数的使用，只说以下最后的-b参数。
+熟悉Rails的朋友一定很清楚，通过rails命令新建一个rails项目时，会自动执行bundle install命令去安装所依赖的gem包。
+padrino新建一个项目，并没有默认去执行bundle install命令，需要加上-b这个参数才会去执行。
+
+一个空的padrino项目就这样搭建完成了。通过这个空的项目来看看padrino。
+
+###Padrino的文件结构
+Gemfile：你的应用里所依赖的gem包  
+app/app.rb：核心应用的主要配置文件  
+config/apps.rb：定义了这个项目中安装的应用  
+config/database.rb：定义了你所用数据库的连接细节  
+app/controller：定义padrino的路由  
+app/helpers：需要用到的helper方法  
+app/views：controller中渲染需要用到的模板  
+lib：你项目中需要用到的扩展和类库  
+public：图片，css，javascript文件存放的地方  
+test：存放controller和model的测试文件
+
+###Padrino中的控制器
+除了和Sinatra中相同的特性外。
+padrino提供了一个名为controller(控制器)的模块让路由配置更加简单。
+添加一个名为controller.rb的文件或者在app/controllers中添加这样一个文件main.rb。  
+<pre><code>
+SimpleApp.controller do
+  get "/test" do
+    "Text to return"
+  end  
+  get "/sample" do
+    "Sample Route"
+  end
+end
+</code></pre>
+看到这里一定很熟悉，没错，最基础的路由配置和Sinatra中完全一样。
+而Padrino中路由的一大特点就是可以通过设置一个别名，不需要在你应用的各处进行硬编码。
+我们只需要在一个地方对URL进行定义，使用一个可以代替这个URL的别名，便可以在我们的整个应用里使用。
+####基本的路由别名
+<pre><code>
+class Basic < Padrino::Application
+  get :index do
+    # 这里产生的url为 '/'
+  end  
+  get :account, :with => :id do
+    # 这里产生的url为 '/account/:id'
+    # id作为params中的参数
+  end
+</code></pre>
+这里提一下，在Padrino中，前端页面通过url_for()这个方法表示路径。
+那么在这里根路径'/'就为url_for(:index)，
+account/:id为url_for(:account, :id => 1)。(这里假设id为1)
+####通过:map指定所表示的路由
+<pre><code>
+class Inline < Padrino::Application
+  get :index, :map => '/index/example'
+    # 这里产生的url为 '/index/example'
+    # 如果使用url_for(:index)，会代表'/index/example'
+  end  
+  get :account, :map => '/accounts/:name/:id'
+    # 用url_for(:account, :name => "lokyoung", :id => 1)代表'/accounts/lokyoung/1'
+  end
+</code></pre>
+####命名空间路由别名
+这里给出一个名为admin的controller
+<pre><code>
+SampleApp.controllers :admin do
+  get :index do
+    # 在这里产生的url为'/admin/'
+    # 使用url_for(:admin, :index)表示'/admin/'
+  end  
+  get :show, :map => "/admin/:id" do
+    # 在这里产生的url为"/admin/#{params[:id]}"
+    # 使用url_for(:admin, :show, :id => 1)表示'/admin/5'
+  end
+</code></pre>
+当然，如果你喜欢的话，这里的symbol可以用字符串去代替(不过我想大部分Rubyist都更喜欢使用symbol吧)。
+####使用:with指定路由中的参数传递
+Notice：在这里可以与上一段代码进行对比
+<pre><code>
+SampleApp.controllers :admin do
+  get :show, :with =>:id do
+    # 在这里产生的url为"/admin/#{params[:id]}"
+    # 使用url_for(:admin, :show, :id => 1)表示'/admin/5'
+    # 与上一段代码中的作用相同，只是通过:with改变了形式
+  end  
+  # 指定参数为一个数组
+  get :show, :with => [:id, :name] do
+    # 这里的url为"/admin/show/#{params[:id]}/#{params[:name]}"
+    # 使用url_for(:admin, :show, :id => 1, :name => "lokyoung")代表'/admin/show/1/lokyoung'
+  end
+</code></pre>
+####嵌套路由
+通过:parent指定父类资源
+<pre><code>
+SampleApp.controllers :admin, :parent => :user do
+  get :index do
+    # 在这里产生url为"/user/#{params[:user_id]}/admin"
+    # 使用url_for(:admin, :index, :user_id => 1)代表'/user/1/admin'
+  end
+</code></pre>
+当然，你也可以在路由方法里指定父类资源
+<pre><code>
+SampleApp.controllers :admin, :parent => :user do
+  get :index, :parent => :admin do
+    # 在这里产生的url为"/user/#{params[:user_id]}/admin/#{params[:admin_id]}/admin"
+  end
+end
+</code></pre>
+在这里指定父类资源时，父类资源路由会在方法访问的路由之前，同时会在资源名的路由之后跟上id。
+可以归类为这样一种形式：父类资源名/父类资源id/方法访问资源
+####提供格式
+你可以通过:provides设置响应的资源格式
+<pre><code>
+SampleApp.controllers :admin do
+  get :show, :with => :id, :provides => :js do
+    # 这里的url为"/admin/show/#{params[:id]}.js"
+    # 使用url_for(:admin, :show, id => 1, :format => :js)代表'/admin/show/1.js'
+  end
+</code></pre>
+####路由白名单
+我们可以为请求中的参数设置一个白名单，参数必须是指定值才能通过
+<pre><code>
+SampleApp.controllers :admin do
+  get :show, :params => [:lok, :young] do
+    # 这里只能接受参数"lok"和"young"。如果输入别的参数，参数会被移除。
+  end
+</code></pre>
