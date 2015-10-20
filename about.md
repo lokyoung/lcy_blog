@@ -7,7 +7,7 @@ profile: true
 
 <img src="{{ site.baseurl }}assets/images/avatar.png" width="150px">
 
-刘晨阳，网名lokyoung，安徽马鞍山人。菜鸟web开发者，喜爱Ruby和java，现就读于华东交通大学软件工程专业。
+刘晨阳，lokyoung，安徽马鞍山人。web开发爱好者，喜爱Ruby和java，现就读于华东交通大学软件工程专业。
 
 我在博客里整理了有关sinatra/padrino的一些资料和自己的心得，希望能帮助到和我一样热爱coding和Ruby的朋友。
 Email: [lokyoung@outlook.com](mailto:lokyoung@outlook.com)

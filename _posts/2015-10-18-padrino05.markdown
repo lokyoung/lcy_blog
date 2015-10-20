@@ -5,15 +5,13 @@ date: 2015-10-18
 ## Generator
 在Rails推出之后，很多敏捷web开发框架都提供了generator的这样一个功能，Padrino也一样。
 generator可以通过你在命令行里的指令快速生成或者指定项目有关的一系列组件，大大提高开发效率。
-不过和Rails不同的是，Padrino的generator并没有限制你去使用指定的模板引擎、ORM框架、测试框架等，所有的这些组件你都可以自己去指定。
+不过和Rails不同的是，Padrino的generator并没有限制你去使用指定的模板引擎、ORM框架、测试框架等，所有的这些组件你都可以自己去指定。  
 generators的基础用法
-<pre><code>
-$ padrino g project <the_app_name> </path/to/create/app> --<component-name><value>
+<pre><code>$ padrino g project <the_app_name> </path/to/create/app> --<component-name><value>
 </code></pre>
 
 你可以这样最简洁地生成一个padrino项目
-<pre><code>
-$ padrino g porject demo_project
+<pre><code>$ padrino g porject demo_project
 </code></pre>
 
 也可以指定你需要使用的组件
@@ -75,7 +73,7 @@ $ padrino g plugin path/to/my_plugin.rb
 $ padrino g plugin hoptoad
 </code></pre>
 
-##Controller(控制器) Generator
+###Controller(控制器) Generator
 在“传统”的web开发框架下，有时候会有很多不必要的重复性代码，在控制器的编写时也一样。
 Rails提供了generator去生成控制器，padrino也可以。
 下面生成一个名为Admin的控制器
@@ -98,7 +96,7 @@ $ padrino g controller Admin get:index post:create
 $ padrino g controller Admin -d
 </code></pre>
 
-##Model(模型) Generator
+###Model(模型) Generator
 Generator也可以快捷地生成Model，并且值得注意的是，model generator是为你建立应用时所指定的ORM组件和测试框架量身定制的。
 在这里，你需要了解一个非常重要的事。在padrino中使用model generator是为了能让你的应用顺利运行。
 如果你在一个padrino应用中没有使用model generator去生成model，你的应用可能无法正常工作。  
@@ -116,62 +114,88 @@ $ padrino g model User name:string age:integer
 $ padrino g model User -d
 </code></pre>
 
-##Migration(数据迁移) Generator
+###Migration(数据迁移) Generator
 generator也提供了对数据迁移文件(migration)的支持。生成的migration也是和你的ORM组件完美契合的。
 和model相似，如果你想让你的应用正常运行，还是用generator去生成migration吧~
 你可以像这样去生成一个简单的migration。(这里遵循约定，驼峰命名和首字母大写)
-<pre><code>
-$ padrino g migration AddFieldsToUsers
+<pre><code>$ padrino g migration AddFieldsToUsers
 </code></pre>
 你也可以通过generator指定要在migration中生成的字段。
-<pre><code>
-$ padrino g miration AddFieldsToUsers login_time:datetime password:string
+<pre><code>$ padrino g miration AddFieldsToUsers login_time:datetime password:string
 </code></pre>
 数据迁移文件会在db/migrations目录下生成。
 如果你想删除migration文件，类似地，使用—d参数。在这里不做过多演示。
 
-##Sub App(子应用) Generator
+###Sub App(子应用) Generator
 在一个padrino项目中可以生成一个子应用。
-<pre><code>
-$ padrino g app one
+<pre><code>$ padrino g app one
 </code></pre>
 这时候在你的项目根目录下会生成一个名为one的文件夹。你子应用的相关信息都存放在其中。
 (这里说明一下，你的子应用首字母无论你写的是大写还是小写，最后生成的目录都会是小写字母开头。)
 你也可以使用generator为子应用生成相关controller、model等。
-<pre></code>
-$ padrino g controller --app one
+<pre></code>$ padrino g controller --app one
 </code></pre>
-##Compoment(组件) Generator
+###Compoment(组件) Generator
 你也可以生成相应的组件。  
 输入如下指令可以查看和组件相关的帮助文件。
-<pre><code>
-$ padrino g component
+<pre><code>$ padrino g component
 </code></pre>
 以指定数据库为mysql为例，指定组件
-<pre><code>
-$ padrino g component -a mysql12
+<pre><code>$ padrino g component -a mysql12
 </code></pre>
 
 ##Padrino Admin
 Padrino提供了一个精美的Admin接口，这也相当于是一个子应用，可以使用这个作为你的后台管理应用。
 这也是个非常有趣的功能，我们一起来看一看~
 首先新建一个应用
-<pre><code>
-$ padrino g admin_test
+<pre><code>$ padrino g admin_test  
 $ cd admin_test
 </code></pre>
 然后再通过generator生成admin应用
-<pre><code>
-$ padrino g admin
+<pre><code>$ padrino g admin
 </code></pre>
 接下来，想让admin能顺利运行。你需要执行数据迁移在数据库中生成相应数据表。
 (这里提一下，你可以使用db:migrate执行数据迁移。当然，如果你使用的ORM组件是ActiveRecord，你也可以通过ar:migrate执行数据迁移)
-<pre><code>
-$ rake db:migrate
+<pre><code>$ rake db:migrate
 </code></pre>
 其次，你要使Admin，需要一个用户名和密码，这时候就需要在数据库中生成相应记录。
-<pre><code>
-$ rake seed
+<pre><code>$ rake seed
 </code></pre>
 执行这条指令后，在控制台中会提示你输入登陆邮箱和密码。  
 之后你便可以访问http://localhost:3000/admin 进入padrino精美的后台并且登陆。
+
+##Helpers
+padrino为前端页面提供了各种各样的Helpers，极大程度上便利了应用的开发。
+###Output Helpers
+Output Helpers能在前台页面中数据的展示、抓取和管理中起到
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+a
