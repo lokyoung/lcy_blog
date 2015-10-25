@@ -1,0 +1,188 @@
+---
+title: 使用padrino从零搭建你的网站(一)————官方博客指导
+date: 2015-10-25
+---
+之前学习padrino一直停留在看文档的层面上，从现在开始投入进实践当中。第一步跟着官方的Blog Tuturial这个经典的案例来。
+##项目搭建
+首先创建项目，这里使用的前台模板是haml，ORM工具是activerecord。
+<pre><code>$ padrino g project sample_blog -t shoulda -e haml -c sass -s jquery -d activerecord -b
+</code></pre>
+
+##初步路由配置
+在之前我们曾经提到过，padrino app的核心配置在app/app.rb中。现在我们编辑该文件。
+<pre><code>class SampleBlog < Padrino::Application
+  register Padrino::Rendering  
+  register Padrino::Helpers
+
+  # 以下是路由配置
+  get "/" do
+    "Hello World!"
+  end
+
+  get :about, :map => '/about_us' do
+    render :haml, "%p 这是一个padrino博客"
+  end
+end
+</code></pre>
+现在你可以启动padrino项目($ padrino start)访问跟路由('/')和'about_us'路径看到相应的页面。
+
+##添加Admin面板
+padrino有一个admin面板可以帮助我们很容易地对项目的数据进行管理，可以用这个做一个后台管理系统。想使用这个面板也非常简单。
+<pre><code>$ padrino g admin
+$ bundle install
+</code></pre>
+不过现在admin模块中还没有建立好相关的数据结构和数据。接下来生成数据迁移和数据。
+<pre><code>$ padrino rake db:create
+$ padrino rake db:migrate
+$ padrino rake seed
+</code></pre>
+接下来你需要输入用户名和密码，之后访问/admin路径填写你刚刚输入的用户名密码即可进入后台。
+由于Ruby本身动态语言的性质，再加上padrino开发模式对代码重载的支持。以上一系列操作你都不需要重新启动padrino即可运行。
+
+##创建博客文章
+首先生成对应文章(post)的数据模型，该模型有两个字段，标题(string类型)和文章主体(text类型)。
+通过generator进行生成。
+<pre><code>$ padrino g model post title:string body:text
+</code></pre>
+接下来完成数据迁移。
+<pre><code>$ padrino rake db:migrate
+</code></pre>
+为了能在前端页面中显示并且对文章进行操作，所以我们生成一个对应文章(post)的controller。
+这里有一个约定，在一个Ruby的web应用中(无论是Rails还是Padrino)，模型后缀为单数，对应模型controller后缀为复数。
+<pre><code>$ padrino g controller posts get:index get:show
+</code></pre>
+接下来对相应路由内容进行配置。
+<pre><code>SampleBlog::App.controllers :posts do
+
+  get :index do
+    # 按照文章创建时间顺序从数据中取出文章资源
+    \@posts = Post.all
+    render 'posts/index'
+  end
+
+  # 根据提交在路由上的id参数传入数据库，这里相比较Rails更加灵活
+  get :show, :with => :id do
+    \@post = Post.find_by(params[:id])
+    render 'posts/show'
+  end
+
+end
+</code></pre>
+然后对post的视图文件进行编写。
+<pre><code># app/views/posts/index.haml
+\- \@title = "Welcome"
+
+\#posts= partial 'posts/post', :collection => \@posts
+</code></pre>
+
+<pre><code># app/views/posts/\_post.haml
+.post
+  .title= link_to post.title, url_for(:posts, :show, :id => post)
+  .date= time_ago_in_words(post.created_at || Time.now) + ' ago'
+  .body= simple_format(post.body)
+</code></pre>
+
+<pre><code># app/views/posts/show.haml
+\- \@title = \@post.title
+\#show
+  .post
+    .title= \@post.title
+    .date= time_ago_in_words(\@post.created_at || Time.now) + ' ago'
+    .body= simple_format(\@post.body)    
+%p= link_to 'View all posts', url_for(:posts, :index)
+</code></pre>
+admin面板可以让你在后台中轻松地管理刚刚创建文章模板，输入以下命令。padrino会自动帮助你建立关联。
+<pre><code>$ padrino g admin_page post
+</code></pre>
+
+##给文章添加相对应的作者
+每一篇文章都需要有一个作者，我们向数据库中增加迁移文件将二者进行关联。
+<pre><code>$ padrino g migration AddAccountToPost account_id:integer
+</code></pre>
+接下来我们将所有文章的作者都指定为第一个用户
+<pre><code># db/migrate/003_add_account_to_post.rb
+class AddAccountToPost < ActiveRecord::Migration
+  def self.up
+    change_table :posts do |t|
+      t.integer :account_id
+    end
+    # and assigns a user to all existing posts
+    first_account = Account.first
+    Post.all.each { |p| p.update_attribute(:account, first_account) }
+  end
+  # ...
+end
+</code></pre>
+之后在models文件夹中修改post的属性。这里讲文章和用户设置为多对一的关系，同时也指定了title和body字段的存在性验证。(二者不可为空)
+<pre><code># app/models/post.rb
+class Post < ActiveRecord::Base
+  belongs_to :account
+  validates_presence_of :title
+  validates_presence_of :body
+end
+</code></pre>
+接下来执行数据迁移指令在数据库中更改数据表的结构。之后修改视图中在文章中显示对应用户信息。
+<pre><code># app/views/posts/show.haml
+\- \@title = \@post.title
+\#show
+  .post
+    .title= \@post.title
+    .date= time_ago_in_words(\@post.created_at || Time.now) + ' ago'
+    .body= simple_format(\@post.body)
+    .details
+      .author Posted by #{@post.account.email}
+%p= link_to 'View all posts', url_for(:posts, :index)
+</code></pre>
+<pre><code># app/views/posts/\_post.haml
+.post
+  .title= link_to post.title, url_for(:posts, :show, :id => post)
+  .date= time_ago_in_words(post.created_at || Time.now) + ' ago'
+  .body= simple_format(post.body)
+  .details
+    .author Posted by #{post.account.email}
+</code></pre>
+
+##网站布局
+现在我们的文章已经可以正常显示了，不过我们网站的前台页面还是很单调(好吧，就是没有任何样式)。
+我们给网站增加一些很基础的样式，这样看起来就不会那么糟糕了。
+首先我们来给我们的整个应用创建一个整体布局，
+在app/views/layouts中创建一个名为application.haml的文件(官方的博客教程使用的是haml作为模板引擎)。
+<pre><code># app/views/layouts/application.haml
+!!! Strict
+%html
+  %head
+    %title= [@title, "Padrino Sample Blog"].compact.join(" | ")
+    = stylesheet_link_tag 'reset', 'application'
+    = javascript_include_tag 'jquery', 'application'
+    = yield_content :include
+  %body
+    #header
+      %h1 Sample Padrino Blog
+      %ul.menu
+        %li= link_to 'Blog', url_for(:posts, :index)
+        %li= link_to 'About', url_for(:about)
+    #container
+      #main= yield
+      #sidebar
+        - form_tag url_for(:posts, :index), :method => 'get'  do
+          Search for:
+          = text_field_tag 'query', :value => params[:query]
+          = submit_tag 'Search'
+        %p Recent Posts
+        %ul.bulleted
+          %li Item 1 - Lorem ipsum dolorum itsum estem
+          %li Item 2 - Lorem ipsum dolorum itsum estem
+          %li Item 3 - Lorem ipsum dolorum itsum estem
+        %p Categories
+        %ul.bulleted
+          %li Item 1 - Lorem ipsum dolorum itsum estem
+          %li Item 2 - Lorem ipsum dolorum itsum estem
+          %li Item 3 - Lorem ipsum dolorum itsum estem
+        %p Latest Comments
+        %ul.bulleted
+          %li Item 1 - Lorem ipsum dolorum itsum estem
+          %li Item 2 - Lorem ipsum dolorum itsum estem
+          %li Item 3 - Lorem ipsum dolorum itsum estem
+    #footer
+      Copyright (c) 2009-2015 Padrino
+</code></pre>

@@ -164,38 +164,7 @@ $ cd admin_test
 执行这条指令后，在控制台中会提示你输入登陆邮箱和密码。  
 之后你便可以访问http://localhost:3000/admin 进入padrino精美的后台并且登陆。
 
-##Helpers
+<!-- ##Helpers
 padrino为前端页面提供了各种各样的Helpers，极大程度上便利了应用的开发。
 ###Output Helpers
-Output Helpers能在前台页面中数据的展示、抓取和管理中起到
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-a
+Output Helpers能在前台页面中数据的展示、抓取和管理中起到 -->
