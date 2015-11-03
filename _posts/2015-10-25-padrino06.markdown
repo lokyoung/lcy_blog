@@ -186,3 +186,4 @@ end
     #footer
       Copyright (c) 2009-2015 Padrino
 </code></pre>
+这样我们的博客就完成了。我想，通过这样一次完整的教程，就可以开始自己的Sinatra/Padrino应用搭建了吧。那么就从这周开始，加油！

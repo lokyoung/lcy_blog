@@ -1,0 +1,110 @@
+---
+title: 使用padrino从零搭建你的网站(二)————静态页面和用户认证系统的开发
+date: 2015-11-03
+---
+之前对padrino的学习仅仅停留在纸面上，要领悟padrino的优点还是得从实际项目出发。
+由于我的毕业设计题目是开发一个可以投入生产环境使用的课程网站，这是一个很好的切入点。
+我之前一直在跟随《Rails Tutorial》这本书学习开发我的网站，现在也可以用padrino的方式来开发。
+来发现为什么有了Rails这样优秀的web开发框架，但是很多地方类似padrino却依然是一个很棒的选择的原因。
+
+首先创建我的项目，这里我使用的模板引擎是erb，orm工具是activerecord，数据库为sqlite
+<pre><code>$ padrino g project web_safe -c sass -d activerecord -a sqlite -e erb -b
+</code></pre>
+
+这里页面样式参考了《Rails Tuturial》，分为头部，页面主体和底部。
+如果之前有Ruby on Rails使用经验的朋友可能会不太适应padrino的css配置。在Rails 4.0以上中使用的是assets pipeline对css文件进行处理。
+而在padrino中，你需要在app/stylesheets目录下定义你所需要的css文件。
+项目运行时会自动在public/stylesheets文件夹下生成“翻译”之后的css文件，而在视图中使用的，也是public/stylesheets目录下的css文件。
+同时，项目的前端工具使用bootstrap。在Gemfile加上一行
+<pre><code>gem 'bootstrap-sass'
+</code></pre>
+项目运行时也会在public/stylesheets的application.css文件中自动生成bootstrap的内容。
+
+在application.html.erb页面的设计中，我尝试使用render对页面进行渲染，但是抛出了无限循环的异常，这里应当使用渲染局部视图的方法parical。
+<pre><code># app/views/layouts/application.html.erb
+<!DOCTYPE html>
+<html>
+  <head>
+    <title></title>
+<!---引用application.css-->
+    <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true %>
+<!--引用application.js-->
+    <%= javascript_include_tag 'application', 'data-turbolinks-track' => true %>
+<!--避免跨站请求(CSRF)伪造攻击-->
+    <%= csrf_meta_tags %>
+    <!--[if lt IE 9]> <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/r29/html5.min.js"> </script> <![endif]-->
+  </head>
+  <body>
+    <%= partial 'layouts/header' %>
+    <div class="container">
+      <%= yield %>
+      <%= partial 'layouts/footer' %>
+
+    </div>
+  </body>
+</html>
+</code></pre>
+
+###静态页面的配置
+由于静态页面没有对应模型，所以这里我可以不用生成model。直接生成控制器，我现在暂时只需要两个静态页面，首页和关于页面。
+<pre><code>$ padrino g controller static_pages home about
+</code></pre>
+由于home为主页，所以需要在控制器中为其配置为跟路由，about为关于页面，也配置相应路由。
+<pre><code>WebSafe::App.controllers :static_pages do  
+  get :home, :map => '/' do
+    render 'home'
+  end  
+  get :about, :map => '/about' do
+    render 'about'
+  end  
+end
+</code></pre>
+这里提一下，如果不为home和about配置路由，那么这两个控制器的默认路径就是/static_pages/home和/static_pages/about。  
+现在我们已经指定好了路由，那么怎么在页面中访问者两个路由呢。
+一种方式就是直接填写url。但是这毕竟不是a padirno way。
+所以我们使用erb内置的url_for方法，以home为例，方法第一个参数为控制器名称，第二个参数为对应控制器动作的名称。
+<pre><code><%= link_to "首页", url(:static_pages, :home) %>
+</code></pre>
+
+###用户认证系统开发
+首先，对于一个系统用户来说，首先需要一个用户模型。这里通过generator生成。
+<pre><code>$ padrino g model User name:string email:string
+</code></pre>
+同时也需要对于模型的控制器，我们需要最先做的是注册功能。所以这里我生成一个名为new的动作。
+<pre><code>$ padrino g controller Users new
+</code></pre>
+Ruby有知名的用户认证系统devise，不过这里我和《Rails Tutorial》中一样，去开发一个认证系统。
+这里需要使用到ActiveRecord中的has_secure_password方法。在models/user.rb中添加。
+<pre><code># models/user.rb
+class User < ActiveRecord::Base
+  has_secure_password
+end
+</code></pre>
+添加方法has_secure_password，会自动添加如下功能：
+数据库中password_digest属性存储密码加密后的哈希值。
+获得一对虚拟属性password和password_confirmation。
+获得authenticate方法，密码正确返回对应用户对象，否则返回false。
+has_secure_password唯一要求是数据库表中有一个名为password_digest的属性。
+所以接下来我们需要在数据中添加password_digest字段。
+<pre><code>$ padrino g migration add_password_digest_to_user  
+
+class AddDigestIndexToUsers < ActiveRecord::Migration
+  def self.up
+    add_column :users, :password_digest, :string
+  end
+
+  def self.down
+  end
+end
+</code></pre>
+执行数据迁移之后便可对用户进行创建。接下来对用户模型进行一些简单的验证设置。
+<pre><code>class User < ActiveRecord::Base
+  validates :name, presence: true, length: { maximum: 20 }
+  VALID_EMAIL_FORMAT = /\A[\w+\-.]+@[a-z\d\-.]+\.[a-z]+\z/i
+  validates :email, presence: true, length: { maximum: 30 },
+                    format: { with: VALID_EMAIL_FORMAT },
+                    uniqueness: { case_sensitive: false }
+  validates :password, length: { minimum: 6 }, allow_blank: true
+  has_secure_password
+end
+</code></pre>
