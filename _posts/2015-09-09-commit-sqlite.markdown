@@ -9,10 +9,14 @@ date: 2015-09-09 19:40:20
 由于没找到中文的回答，所以在这里跟大家分享一下。
 
 首先在命令行中进入rails控制台
-<pre><code>$ rails console</code></pre>
+```sh
+$ rails console
+```
 在命令行中执行以下代码
-<pre><code>ActiveRecord::Base.connection.execute("BEGIN TRANSACTION; END;")</pre></code>
-之后再执行抛出异常前的操作，程序不再报错，可以正常运行。<br/>
+```sh
+ActiveRecord::Base.connection.execute("BEGIN TRANSACTION; END;")
+```
+之后再执行抛出异常前的操作，程序不再报错，可以正常运行。  
 
 根据stackoverflow上的回答，该操作清除了控制台所占用的事务操作，解放了数据库。在这里由于我还没有找到相关的文档，
 所以暂时也不能给出明确的解释。有兴趣的可以去参考[stackoverflow原帖](http://stackoverflow.com/questions/7154664/ruby-sqlite3busyexception-database-is-locked)。

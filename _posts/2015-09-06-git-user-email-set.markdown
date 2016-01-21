@@ -10,8 +10,10 @@ date: 2015-09-06 0:39:42
 文档给出了答案，You haven't added your local Git commit email to your profile。原因其实就是我本地的git配置中的username和email并没有设置成
 我的github账号关联的email。所以需要通过git config进行配置。进入terminal，具体配置如下：
 
-<pre><code>git config --global user.name "username"
-git config --global user.email "useremail@domain.com"</pre></code>
+```sh
+git config --global user.name "username"
+git config --global user.email "useremail@domain.com"
+```
 
 其中username和useremail@domain.com分别换成你的github用户名和关联邮箱。
 
