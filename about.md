@@ -3,7 +3,7 @@ title: About
 permalink: about/
 profile: true
 ---
-###简介
+##简介
 
 <img src="{{ site.baseurl }}assets/images/avatar.png" width="150px">
 
@@ -17,7 +17,7 @@ profile: true
 
 - Ruby China: [https://ruby-china.org/lokyoung](https://ruby-china.org/lokyoung)
 
-####经历
+##经历
 - 2015.7～2015.8 马鞍山百助网络科技有限公司 php实习生
 
 - 2015.1～2015.2 上海卓繁信息技术股份有限公司 产品中心实习生
