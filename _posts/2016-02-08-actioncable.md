@@ -12,9 +12,11 @@ Rails5 beta发布时，DHH也曾分享了一个关于ActionCable的一个demo视
 
 ## 环境搭建
 ActionCable在Rails5.0.0之后的版本中都是自带功能。如果你使用的是Rails5 之前的版本。那么你需要在Gemfile中添加actioncable的相关gem。
+
 ```ruby
 gem 'actioncable'
 ```
+
 在安装了相关的gem之后，你需要做的第一件事便是定义ActionCable的连接类(ApplicationCable::Connection)。
 通过建立这样一个连接，可以进行可靠的认证并且在服务端获取到客户端的信息。在如下的代码中，通过cookies中存取的user_id查找current_user（当前用户）。如果在cookies中找到了相应信息并且返回了current_user，就成功建立连接并且返回current_user，并且current_user可以在actioncable的所有channel instance中直接使用。如果没有找到current_user，认证便会失败。
 ```ruby
@@ -57,7 +59,7 @@ end
 App.cable = ActionCable.createConsumer "ws://localhost:28080"
 ```
 
-## Realtime Notification
+<!-- ## Realtime Notification
   Realtime Notification(实时通知)作为一个在主流Web应用中非常常用的一个功能，通过使用WebSocket协议可以从技术上实现。在这里我就简单介绍下如何使用actioncable实现此功能。当然，除了ActionCable外，也有Faye和message-bus等方式。而ActionCable作为Rails5中推出的一个重要特性，将很多底层的操作进行封装，让开发者可以将关注点集中在业务逻辑的实现上。
 
   同时，这里需要使用Redis的pub/sub功能结合actioncable中的channel。所以你需要在config中配置好你的redis，这里给出一个示例配置。
@@ -124,4 +126,4 @@ bundle exec puma -p 28080 cable/config.ru
 ```bash
 $ ./bin/cable
 ```
-使用ActionCable去实现Realtime的一个服务端到客户端的交互，是一种非常简单高效而又安全稳定的方式。希望我的文章能够对大家有帮助。Happy Hacking！
+使用ActionCable去实现Realtime的一个服务端到客户端的交互，是一种非常简单高效而又安全稳定的方式。希望我的文章能够对大家有帮助。Happy Hacking！ -->
