@@ -5,7 +5,7 @@ meta_description: "This is my blog, Something about technology."
 aboutPage: true
 
 markdown: kramdown
-highlighter: pygments
+highlighter: rouge
 
 gems: [jekyll-paginate]
 
