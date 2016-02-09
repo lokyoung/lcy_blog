@@ -68,7 +68,7 @@ Realtime Notification(实时通知)作为一个在主流Web应用中非常常用
 
 同时，这里需要使用Redis的pub/sub功能结合actioncable中的channel。所以你需要在config中配置好你的redis，这里给出一个示例配置。
 
-```ruby
+```yml
 # config/redis/cable.yml
 
 development: &development
