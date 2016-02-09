@@ -9,6 +9,7 @@ ActionCable通过使用WebSocket协议，可以实现从Server端主动向Client
 前一段时间我曾用ActionCable实现了简单的Realtime Notification推送功能和一个简单的chatroom。
 Rails5 beta发布时，DHH也曾分享了一个关于ActionCable的一个demo视频。
 好的东西需要去分享，我也向大家介绍下我在使用ActionCable时的一些心得。
+[这里](https://github.com/lokyoung/Rails-Training)我使用Rails5结合actioncable实现的一个chatroom源码，欢迎clone&&fork。
 
 ## 环境搭建
 ActionCable在Rails5.0.0之后的版本中都是自带功能。如果你使用的是Rails5 之前的版本。那么你需要在Gemfile中添加actioncable的相关gem。
@@ -126,7 +127,7 @@ run ActionCable.server
 
 之后便可以在bin目录中配置启动脚本文件(由于cable server需要单独开启，这里推荐使用多线程的application server，所以使用puma，puma也是rails官方现在推荐的多线程server)
 
-```bash
+```sh
 #!/bin/bash
 bundle exec puma -p 28080 cable/config.ru
 ```
