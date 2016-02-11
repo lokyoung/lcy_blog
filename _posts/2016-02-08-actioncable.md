@@ -12,10 +12,10 @@ Rails5 beta发布时，DHH也曾分享了一个关于ActionCable的一个demo视
 [这里](https://github.com/lokyoung/Rails-Training)我使用Rails5结合actioncable实现的一个chatroom源码，欢迎clone&&fork。
 
 ## 环境搭建
-ActionCable在Rails5.0.0之后的版本中都是自带功能。如果你使用的是Rails5 之前的版本。那么你需要在Gemfile中添加actioncable的相关gem。
+ActionCable在Rails5.0.0之后的版本中都是自带功能。如果你使用的是Rails5 之前的版本。那么你需要在Gemfile中添加actioncable的相关gem。(由于actioncable已经不在rails/actioncable的master分支中，这里需要指定archive分支)
 
 ```ruby
-gem 'actioncable'
+gem 'actioncable', github: 'rails/actioncable', branch: 'archive'
 ```
 
 在安装了相关的gem之后，你需要做的第一件事便是定义ActionCable的连接类(ApplicationCable::Connection)。
