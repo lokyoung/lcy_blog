@@ -18,7 +18,7 @@ PS: Upstart除了可以在Ubuntu系统上使用外，在Debian、Fedora、openSU
 
 ### Upstart监督Sidekiq配置
 在服务器的/etc/init目录下新建一个`*.conf`文件，在这里我新建了一个名为`sidekiq.conf`的配置文件。
-```
+```sh
 # /etc/init/sidekiq.conf - Sidekiq config
 
 description "Sidekiq Background Worker"
