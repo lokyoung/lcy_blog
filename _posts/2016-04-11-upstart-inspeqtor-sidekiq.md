@@ -138,8 +138,9 @@ inspeqtor的log会在/var/log/upstart/inspeqtor.log中输出。
 对发送email的配置在inspeqtor的全局配置文件/etc/inspeqtor/inspeqtor.conf中。
 可以通过配置gmail，普通的smtp邮箱和服务器本机的smtp邮件服务三种方式发送邮件。
 这里我列出普通smtp邮箱的配置
-```
+```sh
 # /etc/inspeqtor/inspeqtor.conf
+
 send alerts via email with
   username bubba,
   password "correct horse battery staple",
@@ -173,7 +174,10 @@ $ inspeqtorctl start deploy
 $ inspeqtorctl finish deploy
 ```
 PS: inspeqtorctl默认情况下需要sudo才可以执行，可以通过修改inspeqtor的Upstart配置文件（/etc/init/inspeqtor.conf）指定当前用户所在group，group中的用户执行inspeqtorctl就不需要输入sudo了。
-```
+```sh
 # /etc/init/inspeqtor.conf
 setgid current_user_group
 ```
+
+## 参考资料
+[Sidekiq and Upstart](http://www.mikeperham.com/2015/07/16/sidekiq-and-upstart/)
