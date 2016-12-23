@@ -18,7 +18,9 @@ profile: true
 - Ruby China: [https://ruby-china.org/lokyoung](https://ruby-china.org/lokyoung)
 
 ## 经历
-- 2015.11 至今 北京盛安德科技发展有限公司武汉分公司 Ruby实习生
+- 2016.6 至今 北京盛安德科技发展有限公司武汉分公司 Ruby工程师
+
+- 2015.11~2016.6 北京盛安德科技发展有限公司武汉分公司 Ruby实习生
 
 - 2015.7～2015.8 马鞍山百助网络科技有限公司 php实习生
 
